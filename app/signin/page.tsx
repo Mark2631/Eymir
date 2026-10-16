@@ -1,0 +1,1 @@
+import {signin} from '../actions';export default function Page(){return <main><h1>Welcome back</h1><form className="stack" action={signin}><input name="email" type="email" placeholder="Email" required/><input name="password" type="password" placeholder="Password" required/><button>Sign in</button></form></main>}

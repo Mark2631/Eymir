@@ -1,0 +1,5 @@
+import { SignJWT,jwtVerify } from 'jose';import { cookies } from 'next/headers';
+const key=()=>new TextEncoder().encode(process.env.SESSION_SECRET||'');
+export async function session(){const token=(await cookies()).get('eymir_session')?.value;if(!token||!process.env.SESSION_SECRET)return null;try{const {payload}=await jwtVerify(token,key());return typeof payload.sub==='string'?payload.sub:null}catch{return null}}
+export async function login(id:string){if(!process.env.SESSION_SECRET||process.env.SESSION_SECRET.length<32)throw new Error('SESSION_SECRET must be at least 32 characters');const token=await new SignJWT({}).setProtectedHeader({alg:'HS256'}).setSubject(id).setIssuedAt().setExpirationTime('7d').sign(key());(await cookies()).set('eymir_session',token,{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',path:'/',maxAge:604800})}
+export async function logout(){(await cookies()).delete('eymir_session')}

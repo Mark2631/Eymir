@@ -1,0 +1,9 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE IF NOT EXISTS users(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),name text NOT NULL,email text NOT NULL UNIQUE,password_hash text NOT NULL,birth_date date NOT NULL,bio text NOT NULL DEFAULT '',created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS plans(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),owner_id uuid NOT NULL REFERENCES users(id),title text NOT NULL,description text NOT NULL DEFAULT '',place text NOT NULL,starts_at timestamptz NOT NULL,created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS rsvps(plan_id uuid NOT NULL REFERENCES plans(id) ON DELETE CASCADE,user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,PRIMARY KEY(plan_id,user_id));
+CREATE TABLE IF NOT EXISTS likes(from_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,to_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,PRIMARY KEY(from_id,to_id),CHECK(from_id<>to_id));
+CREATE TABLE IF NOT EXISTS blocks(blocker_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,blocked_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,PRIMARY KEY(blocker_id,blocked_id),CHECK(blocker_id<>blocked_id));
+CREATE TABLE IF NOT EXISTS messages(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),sender_id uuid NOT NULL REFERENCES users(id),receiver_id uuid NOT NULL REFERENCES users(id),body text NOT NULL,created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS reports(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),reporter_id uuid NOT NULL REFERENCES users(id),reported_id uuid NOT NULL REFERENCES users(id),reason text NOT NULL,status text NOT NULL DEFAULT 'open',created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS plans_starts_idx ON plans(starts_at);CREATE INDEX IF NOT EXISTS messages_pair_idx ON messages(sender_id,receiver_id,created_at);
